@@ -64,7 +64,7 @@ define([
                 var notebook = note.get('notebookId');
 
                 if (notebook !== 0) {
-                    return notebook.get('id') === notebookId && note.get('trash') === 0;
+                    return notebook === notebookId && note.get('trash') === 0;
                 }
             });
         },
