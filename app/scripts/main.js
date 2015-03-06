@@ -143,22 +143,41 @@ require([
     }
 
     function startApp () {
-        var request;
-
-        if ( !window.indexedDB || !window.localStorage) {
-            alert('Your browser outdated and does not support IndexedDB and/or LocalStorage.');
+        if ( !window.localStorage) {
+            alert('Your browser outdated and does not support LocalStorage.');
             return;
         }
+        window.appNoDB = true;
+        $.ajax({
+            type: 'get',
+            url: '/var',
+            success: function (data) {
+                if (data.trim().length === 0) {
+                    App.firstStart = true;
+                    App.start();
+                    return;
+                } else {
+                    App.firstStart = false;
+                    App.start();
+                }
 
-        request = window.indexedDB.open('MyTestDatabase');
-        request.onerror = function() {
-            // alert('It seems like you refused Laverna to use IndexedDB or you are in Private browsing mode.');
-            window.appNoDB = true;
-            App.start();
-        };
-        request.onsuccess = function() {
-            App.start();
-        };
+                data.split('\n').forEach(function (file) {
+                    if (file.length === 0) {
+                        return;
+                    }
+                    $.ajax({
+                        type: 'get',
+                        url: '/var/' + file,
+                        success: function (data) {
+                            window.localStorage.setItem(decodeURIComponent(file), JSON.parse(data));
+                        }
+                    });
+                });
+            },
+            error: function () {
+                alert('Unexpected error loading data');
+            }
+        });
     }
 
     $(document).ready(function () {

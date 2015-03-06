@@ -99,11 +99,6 @@ define([
     App.on('before:start', function () {
         configs.fetch();
 
-        // Set default set of configs
-        if (configs.length === 0) {
-            App.firstStart = true;
-        }
-
         App.settings = configs.getConfigs();
         configs.on('change', function () {
             App.settings = configs.getConfigs();

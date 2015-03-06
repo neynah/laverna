@@ -17,7 +17,44 @@ define([
                 model.store = model.storeName;
             }
 
-            return Backbone.getSyncMethod(model).apply(this, [method, model, options]);
+            var oldId = model.id;
+            var oldStore = model.storeName;
+
+            var res = Backbone.getSyncMethod(model).apply(this, [method, model, options]);
+
+            var targetName;
+            if (method === 'update' || method === 'create') {
+                if (method === 'create') {
+                    targetName = 'laverna.' + model.storeName;
+                    $.ajax({
+                        type: 'PUT',
+                        url: '/var/' + encodeURIComponent(targetName),
+                        data: JSON.stringify(window.localStorage[targetName])
+                    });
+                }
+
+                // todo: break if not model.id
+                targetName = 'laverna.' + model.storeName;
+                if (model.id) {
+                    targetName = targetName + '-' + model.id;
+                }
+                $.ajax({
+                    type: 'PUT',
+                    url: '/var/' + encodeURIComponent(targetName),
+                    data: JSON.stringify(window.localStorage[targetName])
+                });
+            } else if (method === 'delete') {
+                targetName = 'laverna.' + oldStore;
+                if (oldId) {
+                    targetName = targetName + '-' + oldId;
+                }
+                $.ajax({
+                    type: 'DELETE',
+                    url: '/var/' + encodeURIComponent(targetName)
+                });
+
+             }
+            return res;
         };
     }
 
